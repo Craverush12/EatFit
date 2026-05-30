@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FitPlate – Redesigned</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', -apple-system, sans-serif; background: #F7F6F3; color: #111; }
+
+  /* ── PAGE LAYOUT ── */
+  .app { max-width: 1100px; margin: 0 auto; padding: 20px; display: grid; gap: 20px; }
+
+  /* ── STEP 1: INPUT ── */
+  .input-card {
+    background: #0C0F0A;
+    border-radius: 20px;
+    padding: 32px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    align-items: center;
+  }
+  @media (max-width: 700px) { .input-card { grid-template-columns: 1fr; } }
+  .input-left {}
+  .brand { font-size: 11px; font-weight: 700; letter-spacing: 0.2em; color: #86EFAC; margin-bottom: 16px; }
+  .headline { font-size: 38px; font-weight: 900; color: #fff; line-height: 1.05; letter-spacing: -1px; margin-bottom: 8px; }
+  .headline em { color: #86EFAC; font-style: normal; }
+  .subline { font-size: 14px; color: #6B7280; line-height: 1.6; margin-bottom: 24px; }
+
+  .stat-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .stat-input { background: rgba(255,255,255,0.06); border: 1.5px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 14px 16px; cursor: text; transition: border-color 0.15s; }
+  .stat-input:hover { border-color: rgba(134,239,172,0.4); }
+  .stat-input .lbl { font-size: 10px; font-weight: 600; color: #9CA3AF; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+  .stat-input .val { font-size: 28px; font-weight: 800; color: #fff; line-height: 1; }
+  .stat-input .unit { font-size: 12px; color: #6B7280; font-weight: 500; margin-left: 2px; }
+
+  .diet-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .diet-chip { padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1.5px solid rgba(255,255,255,0.15); color: #D1D5DB; cursor: pointer; }
+  .diet-chip.on { background: #86EFAC; color: #052e16; border-color: #86EFAC; }
+
+  .goal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 18px; }
+  .goal-btn { background: rgba(255,255,255,0.05); border: 1.5px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 10px 12px; cursor: pointer; }
+  .goal-btn.on { border-color: #86EFAC; background: rgba(134,239,172,0.1); }
+  .goal-icon { font-size: 16px; margin-bottom: 4px; }
+  .goal-text { font-size: 12px; font-weight: 600; color: #E5E7EB; }
+  .goal-sub { font-size: 10px; color: #6B7280; margin-top: 2px; }
+
+  .cta { background: #86EFAC; color: #052e16; font-size: 14px; font-weight: 800; padding: 14px 24px; border-radius: 12px; text-align: center; cursor: pointer; letter-spacing: -0.2px; }
+
+  /* BMI VISUAL RIGHT SIDE */
+  .bmi-display { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+  .bmi-arc-wrap { position: relative; width: 160px; height: 160px; }
+  svg.bmi-svg { width: 160px; height: 160px; transform: rotate(-90deg); }
+  .bmi-arc-track { fill: none; stroke: rgba(255,255,255,0.08); stroke-width: 14; }
+  .bmi-arc-fill { fill: none; stroke: #F59E0B; stroke-width: 14; stroke-linecap: round; stroke-dasharray: 377; stroke-dashoffset: 120; }
+  .bmi-inner { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .bmi-number { font-size: 36px; font-weight: 900; color: #fff; line-height: 1; }
+  .bmi-word { font-size: 10px; font-weight: 600; color: #9CA3AF; letter-spacing: 0.1em; margin-top: 2px; }
+  .bmi-category { background: #FEF3C7; color: #92400E; font-size: 12px; font-weight: 700; padding: 5px 14px; border-radius: 20px; }
+
+  .targets { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 16px; width: 100%; }
+  .targets-title { font-size: 10px; font-weight: 700; color: #9CA3AF; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 12px; }
+  .target-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .target-row:last-child { margin-bottom: 0; }
+  .target-label { font-size: 12px; color: #D1D5DB; width: 60px; flex-shrink: 0; }
+  .target-bar { flex: 1; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; }
+  .target-fill { height: 100%; border-radius: 3px; }
+  .target-fill.cal { background: #86EFAC; width: 62%; }
+  .target-fill.pro { background: #60A5FA; width: 78%; }
+  .target-fill.fat { background: #F87171; width: 45%; }
+  .target-val { font-size: 12px; font-weight: 700; color: #fff; width: 44px; text-align: right; flex-shrink: 0; }
+
+  /* ── RESULTS SECTION ── */
+  .results-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+  .results-title { font-size: 22px; font-weight: 800; }
+  .results-sub { font-size: 13px; color: #6B7280; }
+  .meal-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+  .meal-tab { padding: 7px 16px; border-radius: 20px; font-size: 12px; font-weight: 700; border: 1.5px solid #E0DDD8; color: #555; background: #fff; cursor: pointer; }
+  .meal-tab.active { background: #111; color: #fff; border-color: #111; }
+
+  .results-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+  @media (max-width: 700px) { .results-grid { grid-template-columns: 1fr; } }
+
+  .section-card { background: #fff; border-radius: 16px; overflow: hidden; border: 1px solid #EAE7E2; }
+  .section-head { padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #F0EDE8; }
+  .section-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #888; display: flex; align-items: center; gap: 6px; }
+  .section-cta { font-size: 11px; font-weight: 700; color: #FC5523; cursor: pointer; }
+
+  /* SWIGGY-STYLE FOOD CARD */
+  .food-item { display: flex; gap: 12px; padding: 14px 16px; border-bottom: 1px solid #F5F3F0; align-items: flex-start; }
+  .food-item:last-child { border-bottom: none; }
+  .food-img { width: 72px; height: 72px; border-radius: 10px; background: #F0EDE8; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 32px; position: relative; overflow: hidden; }
+  .food-img-bg { position: absolute; inset: 0; background: linear-gradient(135deg, #FFF5F0, #FFE4D6); }
+  .food-emoji { position: relative; z-index: 1; }
+  .food-info { flex: 1; min-width: 0; }
+  .veg-dot { width: 14px; height: 14px; border: 1.5px solid #2E7D32; border-radius: 3px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; margin-bottom: 4px; }
+  .veg-dot::after { content: ''; width: 7px; height: 7px; background: #2E7D32; border-radius: 50%; display: block; }
+  .nonveg-dot { width: 14px; height: 14px; border: 1.5px solid #C62828; border-radius: 3px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; margin-bottom: 4px; }
+  .nonveg-dot::after { content: ''; width: 7px; height: 7px; background: #C62828; border-radius: 50%; display: block; }
+  .food-name { font-size: 13px; font-weight: 700; color: #111; margin-bottom: 3px; }
+  .food-rest { font-size: 11px; color: #888; margin-bottom: 5px; }
+  .food-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 6px; }
+  .food-tag { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; }
+  .food-tag.cal { background: #F0FDF4; color: #15803D; }
+  .food-tag.protein { background: #EFF6FF; color: #1D4ED8; }
+  .food-tag.why { background: #FFF7ED; color: #C2410C; }
+  .food-bottom { display: flex; align-items: center; justify-content: space-between; }
+  .food-rating { display: flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 700; color: #111; }
+  .star { color: #F59E0B; font-size: 11px; }
+  .food-price { font-size: 14px; font-weight: 800; color: #111; }
+  .add-food { background: #fff; border: 1.5px solid #FC5523; color: #FC5523; font-size: 12px; font-weight: 800; padding: 6px 16px; border-radius: 7px; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+
+  /* SWIGGY INSTAMART CARD */
+  .im-item { display: flex; gap: 12px; padding: 14px 16px; border-bottom: 1px solid #F5F3F0; align-items: flex-start; }
+  .im-item:last-child { border-bottom: none; }
+  .im-img { width: 68px; height: 68px; border-radius: 10px; background: #F0F9FF; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 28px; position: relative; }
+  .im-discount { position: absolute; top: -4px; right: -4px; background: #16A34A; color: #fff; font-size: 9px; font-weight: 800; padding: 2px 5px; border-radius: 4px; }
+  .im-info { flex: 1; min-width: 0; }
+  .im-brand { font-size: 10px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px; }
+  .im-name { font-size: 13px; font-weight: 700; color: #111; margin-bottom: 2px; }
+  .im-qty { font-size: 11px; color: #888; margin-bottom: 5px; }
+  .im-tag { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; background: #F0FDF4; color: #15803D; display: inline-block; margin-bottom: 6px; }
+  .im-prices { display: flex; align-items: center; gap: 6px; }
+  .im-offer { font-size: 14px; font-weight: 800; color: #111; }
+  .im-mrp { font-size: 11px; color: #aaa; text-decoration: line-through; }
+  .add-im { background: #fff; border: 1.5px solid #5856D6; color: #5856D6; font-size: 12px; font-weight: 800; padding: 6px 16px; border-radius: 7px; cursor: pointer; white-space: nowrap; flex-shrink: 0; align-self: center; }
+
+  /* SHARE CARD */
+  .share-card { background: linear-gradient(135deg, #064E3B 0%, #065F46 50%, #047857 100%); border-radius: 16px; padding: 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .share-left {}
+  .share-eyebrow { font-size: 10px; font-weight: 700; color: #6EE7B7; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 6px; }
+  .share-title { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+  .share-sub { font-size: 13px; color: #A7F3D0; }
+  .share-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .share-btn { padding: 10px 20px; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer; }
+  .share-btn.primary { background: #fff; color: #065F46; }
+  .share-btn.outline { border: 1.5px solid rgba(255,255,255,0.3); color: #fff; }
+
+  /* CALORIE SUMMARY BAR */
+  .cal-bar { background: #fff; border-radius: 12px; padding: 14px 20px; border: 1px solid #EAE7E2; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .cal-item { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 70px; }
+  .cal-num { font-size: 20px; font-weight: 900; color: #111; }
+  .cal-lbl { font-size: 10px; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 1px; }
+  .cal-divider { width: 1px; height: 36px; background: #EEE; }
+  .cal-progress { flex: 2; min-width: 120px; }
+  .cal-progress-bar { height: 8px; background: #F0EDE8; border-radius: 4px; overflow: hidden; margin-bottom: 4px; }
+  .cal-progress-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, #86EFAC, #34D399); width: 34%; }
+  .cal-progress-lbl { font-size: 11px; color: #888; }
+  .cal-progress-lbl strong { color: #111; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- STEP 1: INPUT CARD -->
+  <div class="input-card">
+    <div class="input-left">
+      <div class="brand">FITPLATE · POWERED BY SWIGGY</div>
+      <div class="headline">Eat right for<br><em>your</em> body.</div>
+      <div class="subline">Enter your stats. We'll find the best food on Swiggy and stock your kitchen via Instamart — personalized to your BMI and goal.</div>
+
+      <div class="stat-inputs">
+        <div class="stat-input">
+          <div class="lbl">Height</div>
+          <div class="val">172<span class="unit">cm</span></div>
+        </div>
+        <div class="stat-input">
+          <div class="lbl">Weight</div>
+          <div class="val">78<span class="unit">kg</span></div>
+        </div>
+        <div class="stat-input">
+          <div class="lbl">Age</div>
+          <div class="val">26<span class="unit">yrs</span></div>
+        </div>
+        <div class="stat-input">
+          <div class="lbl">Gender</div>
+          <div class="val" style="font-size:18px">Male</div>
+        </div>
+      </div>
+
+      <div class="diet-row">
+        <div class="diet-chip on">Veg</div>
+        <div class="diet-chip">Non-Veg</div>
+        <div class="diet-chip">Vegan</div>
+      </div>
+
+      <div class="goal-grid">
+        <div class="goal-btn">
+          <div class="goal-icon">🔥</div>
+          <div class="goal-text">Lose weight</div>
+          <div class="goal-sub">Calorie deficit</div>
+        </div>
+        <div class="goal-btn on">
+          <div class="goal-icon">🥗</div>
+          <div class="goal-text">Eat healthier</div>
+          <div class="goal-sub">Balanced macros</div>
+        </div>
+        <div class="goal-btn">
+          <div class="goal-icon">💪</div>
+          <div class="goal-text">Gain muscle</div>
+          <div class="goal-sub">High protein</div>
+        </div>
+        <div class="goal-btn">
+          <div class="goal-icon">⚖️</div>
+          <div class="goal-text">Maintain</div>
+          <div class="goal-sub">Stay the course</div>
+        </div>
+      </div>
+
+      <div class="cta">Calculate BMI &amp; get my food plan →</div>
+    </div>
+
+    <div class="bmi-display">
+      <div class="bmi-arc-wrap">
+        <svg class="bmi-svg" viewBox="0 0 160 160">
+          <circle class="bmi-arc-track" cx="80" cy="80" r="60"/>
+          <circle class="bmi-arc-fill" cx="80" cy="80" r="60"/>
+        </svg>
+        <div class="bmi-inner">
+          <div class="bmi-number">26.4</div>
+          <div class="bmi-word">YOUR BMI</div>
+        </div>
+      </div>
+      <div class="bmi-category">⚠️ Slightly Overweight</div>
+
+      <div class="targets">
+        <div class="targets-title">Daily targets for your goal</div>
+        <div class="target-row">
+          <div class="target-label">Calories</div>
+          <div class="target-bar"><div class="target-fill cal"></div></div>
+          <div class="target-val">1,820</div>
+        </div>
+        <div class="target-row">
+          <div class="target-label">Protein</div>
+          <div class="target-bar"><div class="target-fill pro"></div></div>
+          <div class="target-val">137g</div>
+        </div>
+        <div class="target-row">
+          <div class="target-label">Fat limit</div>
+          <div class="target-bar"><div class="target-fill fat"></div></div>
+          <div class="target-val">54g</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CALORIE TRACKER BAR -->
+  <div class="cal-bar">
+    <div class="cal-item">
+      <div class="cal-num">1,820</div>
+      <div class="cal-lbl">Daily target</div>
+    </div>
+    <div class="cal-divider"></div>
+    <div class="cal-item">
+      <div class="cal-num" style="color:#16A34A">620</div>
+      <div class="cal-lbl">Selected so far</div>
+    </div>
+    <div class="cal-divider"></div>
+    <div class="cal-item">
+      <div class="cal-num" style="color:#6B7280">1,200</div>
+      <div class="cal-lbl">Remaining</div>
+    </div>
+    <div class="cal-progress">
+      <div class="cal-progress-bar"><div class="cal-progress-fill"></div></div>
+      <div class="cal-progress-lbl"><strong>34%</strong> of daily calories selected</div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="results-header">
+    <div>
+      <div class="results-title">Your personalised picks</div>
+      <div class="results-sub">From live Swiggy data · filtered for BMI 26.4 · Eat healthier goal</div>
+    </div>
+    <div class="meal-tabs">
+      <div class="meal-tab active">All</div>
+      <div class="meal-tab">🌅 Breakfast</div>
+      <div class="meal-tab">☀️ Lunch</div>
+      <div class="meal-tab">🌙 Dinner</div>
+      <div class="meal-tab">🥤 Snacks</div>
+    </div>
+  </div>
+
+  <div class="results-grid">
+
+    <!-- SWIGGY FOOD SECTION -->
+    <div class="section-card">
+      <div class="section-head">
+        <div class="section-label">🛵 Swiggy Food · Delivery picks</div>
+        <div class="section-cta">View all</div>
+      </div>
+
+      <!-- Item 1 -->
+      <div class="food-item">
+        <div class="food-img"><div class="food-img-bg"></div><span class="food-emoji">🥗</span></div>
+        <div class="food-info">
+          <div style="display:flex;align-items:center;gap:5px;margin-bottom:4px">
+            <div class="veg-dot"></div>
+            <span style="font-size:10px;color:#888">Veg</span>
+          </div>
+          <div class="food-name">Quinoa &amp; Roasted Veggie Bowl</div>
+          <div class="food-rest">Protein Kitchen · 28 min · 4.4 ★</div>
+          <div class="food-tags">
+            <span class="food-tag cal">320 cal</span>
+            <span class="food-tag protein">18g protein</span>
+            <span class="food-tag why">✓ Low carb</span>
+          </div>
+          <div class="food-bottom">
+            <div class="food-rating"><span class="star">★</span> 4.4 · 1.2k ratings</div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="food-price">₹320</div>
+              <div class="add-food">ADD</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Item 2 -->
+      <div class="food-item">
+        <div class="food-img"><div class="food-img-bg"></div><span class="food-emoji">🍗</span></div>
+        <div class="food-info">
+          <div style="display:flex;align-items:center;gap:5px;margin-bottom:4px">
+            <div class="nonveg-dot"></div>
+            <span style="font-size:10px;color:#888">Non-veg</span>
+          </div>
+          <div class="food-name">Grilled Chicken &amp; Dal</div>
+          <div class="food-rest">Homestyle Kitchen · 35 min · 4.2 ★</div>
+          <div class="food-tags">
+            <span class="food-tag cal">410 cal</span>
+            <span class="food-tag protein">38g protein</span>
+            <span class="food-tag why">✓ High protein</span>
+          </div>
+          <div class="food-bottom">
+            <div class="food-rating"><span class="star">★</span> 4.2 · 890 ratings</div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="food-price">₹290</div>
+              <div class="add-food">ADD</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Item 3 -->
+      <div class="food-item">
+        <div class="food-img"><div class="food-img-bg"></div><span class="food-emoji">🥙</span></div>
+        <div class="food-info">
+          <div style="display:flex;align-items:center;gap:5px;margin-bottom:4px">
+            <div class="veg-dot"></div>
+            <span style="font-size:10px;color:#888">Veg</span>
+          </div>
+          <div class="food-name">Paneer Tikka Wrap</div>
+          <div class="food-rest">FitBowl · 22 min · 4.5 ★</div>
+          <div class="food-tags">
+            <span class="food-tag cal">380 cal</span>
+            <span class="food-tag protein">24g protein</span>
+            <span class="food-tag why">✓ Balanced</span>
+          </div>
+          <div class="food-bottom">
+            <div class="food-rating"><span class="star">★</span> 4.5 · 2.1k ratings</div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="food-price">₹240</div>
+              <div class="add-food">ADD</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INSTAMART SECTION -->
+    <div class="section-card">
+      <div class="section-head">
+        <div class="section-label" style="color:#5856D6">🛒 Instamart · Stock your kitchen</div>
+        <div class="section-cta" style="color:#5856D6">View all</div>
+      </div>
+
+      <!-- IM Item 1 -->
+      <div class="im-item">
+        <div class="im-img">
+          🌾
+          <div class="im-discount">24% off</div>
+        </div>
+        <div class="im-info">
+          <div class="im-brand">True Elements</div>
+          <div class="im-name">Millet Muesli – No Added Sugar</div>
+          <div class="im-qty">500g · Breakfast</div>
+          <div class="im-tag">✓ Low GI · High fibre</div>
+          <div class="im-prices">
+            <div class="im-offer">₹249</div>
+            <div class="im-mrp">₹329</div>
+          </div>
+        </div>
+        <div class="add-im">ADD</div>
+      </div>
+
+      <!-- IM Item 2 -->
+      <div class="im-item">
+        <div class="im-img">
+          🥜
+          <div class="im-discount">18% off</div>
+        </div>
+        <div class="im-info">
+          <div class="im-brand">Happilo</div>
+          <div class="im-name">Premium Roasted Almonds</div>
+          <div class="im-qty">200g · Snack</div>
+          <div class="im-tag">✓ High protein · Zero sugar</div>
+          <div class="im-prices">
+            <div class="im-offer">₹199</div>
+            <div class="im-mrp">₹240</div>
+          </div>
+        </div>
+        <div class="add-im">ADD</div>
+      </div>
+
+      <!-- IM Item 3 -->
+      <div class="im-item">
+        <div class="im-img">
+          🫙
+          <div class="im-discount">30% off</div>
+        </div>
+        <div class="im-info">
+          <div class="im-brand">Yoga Bar</div>
+          <div class="im-name">Whey Protein – Chocolate</div>
+          <div class="im-qty">1kg · Post-workout</div>
+          <div class="im-tag">✓ 24g protein per serving</div>
+          <div class="im-prices">
+            <div class="im-offer">₹1,299</div>
+            <div class="im-mrp">₹1,849</div>
+          </div>
+        </div>
+        <div class="add-im">ADD</div>
+      </div>
+
+      <!-- IM Item 4 -->
+      <div class="im-item">
+        <div class="im-img">
+          🫐
+        </div>
+        <div class="im-info">
+          <div class="im-brand">Nature's Basket</div>
+          <div class="im-name">Greek Yoghurt – Plain</div>
+          <div class="im-qty">400g · Snack/Breakfast</div>
+          <div class="im-tag">✓ Probiotic · High protein</div>
+          <div class="im-prices">
+            <div class="im-offer">₹179</div>
+          </div>
+        </div>
+        <div class="add-im">ADD</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SHARE CARD -->
+  <div class="share-card">
+    <div class="share-left">
+      <div class="share-eyebrow">✦ Shareable plan card</div>
+      <div class="share-title">My FitPlate Plan · BMI 26.4 · Eating Healthier 🥗</div>
+      <div class="share-sub">1,820 cal/day · 137g protein · Swiggy picks curated by AI</div>
+    </div>
+    <div class="share-actions">
+      <div class="share-btn primary">📤 Share on WhatsApp</div>
+      <div class="share-btn outline">🔗 Copy link</div>
+      <div class="share-btn outline">📸 Save as image</div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

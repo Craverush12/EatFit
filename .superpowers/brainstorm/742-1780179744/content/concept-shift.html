@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Product Concept</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif; background: #F0EDE8; color: #111; padding: 20px; }
+
+  .page-title { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
+  .page-sub { font-size: 14px; color: #666; margin-bottom: 28px; }
+
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+  @media (max-width: 800px) { .split { grid-template-columns: 1fr; } }
+
+  .panel { background: #fff; border-radius: 12px; overflow: hidden; border: 1px solid #E0DDD8; }
+  .panel-header { padding: 14px 18px; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; border-bottom: 1px solid #E0DDD8; display: flex; align-items: center; gap: 8px; }
+  .panel-header.old { background: #FFF5F0; color: #CC4400; }
+  .panel-header.new { background: #F0FFF8; color: #007A4C; }
+  .panel-body { padding: 18px; }
+
+  /* OLD APP MOCKUP */
+  .old-form { display: grid; gap: 8px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .form-field { background: #F8F7F5; border: 1px solid #DDD; border-radius: 6px; padding: 8px 10px; }
+  .form-label { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; color: #888; text-transform: uppercase; margin-bottom: 2px; }
+  .form-value { font-size: 12px; color: #333; }
+  .form-submit { background: #222; color: #fff; font-size: 12px; font-weight: 700; padding: 10px; border-radius: 6px; text-align: center; margin-top: 4px; }
+  .old-verdict { font-size: 12px; color: #999; text-align: center; padding: 8px; }
+
+  /* NEW APP MOCKUP */
+  .new-hero { background: linear-gradient(160deg, #111 0%, #1a1a1a 100%); padding: 20px; border-radius: 0; }
+  .new-logo { font-size: 11px; font-weight: 700; color: #888; letter-spacing: 0.15em; margin-bottom: 16px; }
+  .new-headline { font-size: 26px; font-weight: 800; color: #fff; line-height: 1.15; margin-bottom: 16px; }
+  .new-headline span { color: #4ADE80; }
+
+  .vibe-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+  .chip { padding: 7px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1.5px solid rgba(255,255,255,0.15); color: #ccc; background: rgba(255,255,255,0.07); }
+  .chip.active { background: #4ADE80; color: #111; border-color: #4ADE80; }
+
+  .detect-btn { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 10px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; width: 100%; margin-bottom: 10px; }
+  .detect-dot { width: 8px; height: 8px; background: #4ADE80; border-radius: 50%; }
+
+  .plan-btn { background: #4ADE80; color: #111; font-size: 13px; font-weight: 800; padding: 12px; border-radius: 8px; text-align: center; width: 100%; }
+
+  /* RESULT CARD */
+  .tonight-card { border: 1px solid #E8E4DE; border-radius: 12px; overflow: hidden; margin-top: 18px; }
+  .card-top { background: linear-gradient(135deg, #0F1923 0%, #1B2A3B 100%); padding: 16px; }
+  .card-badge { font-size: 10px; font-weight: 700; color: #4ADE80; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 8px; }
+  .card-title { font-size: 18px; font-weight: 800; color: #fff; line-height: 1.2; margin-bottom: 4px; }
+  .card-sub { font-size: 11px; color: #888; }
+
+  .card-sections { display: grid; grid-template-columns: 1fr 1fr 1fr; }
+  .card-section { padding: 12px 10px; border-right: 1px solid #F0EDE8; }
+  .card-section:last-child { border-right: none; }
+  .section-label { font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #999; margin-bottom: 6px; }
+  .section-name { font-size: 11px; font-weight: 700; color: #111; line-height: 1.3; margin-bottom: 4px; }
+  .section-detail { font-size: 10px; color: #777; }
+  .section-price { font-size: 11px; font-weight: 700; color: #007A4C; margin-top: 4px; }
+
+  .card-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; background: #FAFAFA; border-top: 1px solid #F0EDE8; }
+  .action-btn { padding: 9px 10px; border-radius: 7px; font-size: 11px; font-weight: 700; text-align: center; }
+  .action-primary { background: #111; color: #fff; }
+  .action-share { background: #fff; color: #111; border: 1.5px solid #DDD; }
+
+  .social-bar { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: #F8F7F5; border-top: 1px solid #EEE; font-size: 11px; color: #666; }
+  .avatar-stack { display: flex; }
+  .avatar { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #fff; background: #DDD; margin-left: -5px; }
+  .avatar:first-child { margin-left: 0; }
+  .avatar-a { background: #FF6B6B; }
+  .avatar-b { background: #4ECDC4; }
+  .avatar-c { background: #FFE66D; }
+
+  /* DIFFERENCES */
+  .diff-list { list-style: none; display: grid; gap: 10px; margin-top: 10px; }
+  .diff-item { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; }
+  .diff-item .icon { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; margin-top: 1px; }
+  .diff-item .icon.bad { background: #FEE2E2; }
+  .diff-item .icon.good { background: #DCFCE7; }
+  .diff-text strong { display: block; font-size: 13px; font-weight: 700; color: #111; }
+  .diff-text span { font-size: 12px; color: #666; }
+</style>
+</head>
+<body>
+
+<p class="page-title">The 2016 vs 2026 Product Gap</p>
+<p class="page-sub">Same Swiggy MCP data. Completely different product philosophy.</p>
+
+<div class="split">
+
+  <!-- LEFT: OLD -->
+  <div>
+    <div class="panel">
+      <div class="panel-header old">❌ Current app — 2016 UX</div>
+      <div class="panel-body">
+        <div class="old-form">
+          <div class="form-field">
+            <div class="form-label">Locality</div>
+            <div class="form-value">Indiranagar</div>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <div class="form-label">City</div>
+              <div class="form-value">Bengaluru</div>
+            </div>
+            <div class="form-field">
+              <div class="form-label">Guests</div>
+              <div class="form-value">2</div>
+            </div>
+          </div>
+          <div class="form-field">
+            <div class="form-label">Vibe</div>
+            <div class="form-value">rooftop cafe</div>
+          </div>
+          <div class="form-field">
+            <div class="form-label">Budget</div>
+            <div class="form-value">Rs 2500 for two</div>
+          </div>
+          <div class="form-field">
+            <div class="form-label">Time window</div>
+            <div class="form-value">7:30 PM - 10:30 PM</div>
+          </div>
+          <div class="form-field">
+            <div class="form-label">Instamart add-ons</div>
+            <div class="form-value">dessert, sparkling water...</div>
+          </div>
+          <div class="form-submit">Build evening plans</div>
+        </div>
+        <div class="old-verdict">↓ Spinner → wall of plan text → manually pick items → confirm orders</div>
+      </div>
+    </div>
+
+    <ul class="diff-list" style="margin-top:14px">
+      <li class="diff-item">
+        <div class="icon bad">✗</div>
+        <div class="diff-text">
+          <strong>8-field form to fill</strong>
+          <span>User has to do the work before seeing any value</span>
+        </div>
+      </li>
+      <li class="diff-item">
+        <div class="icon bad">✗</div>
+        <div class="diff-text">
+          <strong>Output is text, not decisions</strong>
+          <span>"Plan 1 / Plan 2 / Plan 3" gives you more work, not answers</span>
+        </div>
+      </li>
+      <li class="diff-item">
+        <div class="icon bad">✗</div>
+        <div class="diff-text">
+          <strong>Nothing to share</strong>
+          <span>Results live in this tab, not on Instagram or WhatsApp</span>
+        </div>
+      </li>
+      <li class="diff-item">
+        <div class="icon bad">✗</div>
+        <div class="diff-text">
+          <strong>No urgency, no FOMO</strong>
+          <span>Feels like a planning tool, not a "what's happening tonight" app</span>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <!-- RIGHT: NEW -->
+  <div>
+    <div class="panel">
+      <div class="panel-header new">✓ New concept — 3 taps to a plan</div>
+      <div class="panel-body" style="padding:0">
+        <div class="new-hero">
+          <div class="new-logo">TONIGHT · SWIGGY</div>
+          <div class="new-headline">What's your<br><span>vibe tonight?</span></div>
+          <div class="detect-btn">
+            <div class="detect-dot"></div>
+            Indiranagar, Bengaluru · detected
+          </div>
+          <div class="vibe-chips">
+            <div class="chip active">🌙 Rooftop date</div>
+            <div class="chip">🎉 Party night</div>
+            <div class="chip">🍕 Chill night in</div>
+            <div class="chip">👨‍👩‍👧 Family dinner</div>
+          </div>
+          <div class="plan-btn">Plan my tonight →</div>
+        </div>
+
+        <div class="tonight-card">
+          <div class="card-top">
+            <div class="card-badge">✦ Top pick for tonight</div>
+            <div class="card-title">The Velvet Rooftop</div>
+            <div class="card-sub">Curated from live Swiggy data · 2 guests · ₹2,500 est.</div>
+          </div>
+          <div class="card-sections">
+            <div class="card-section">
+              <div class="section-label">🍽 Dine</div>
+              <div class="section-name">The Fatty Bao Terrace</div>
+              <div class="section-detail">8:00 PM slot open</div>
+              <div class="section-price">₹1,800 for 2</div>
+            </div>
+            <div class="card-section">
+              <div class="section-label">🛵 Backup</div>
+              <div class="section-name">Smoke House Deli</div>
+              <div class="section-detail">35 min delivery</div>
+              <div class="section-price">₹1,200 for 2</div>
+            </div>
+            <div class="card-section">
+              <div class="section-label">🛒 Stock up</div>
+              <div class="section-name">Prosecco + Dessert kit</div>
+              <div class="section-detail">12 min delivery</div>
+              <div class="section-price">₹640 · save ₹120</div>
+            </div>
+          </div>
+          <div class="card-actions">
+            <div class="action-btn action-primary">Book table + order</div>
+            <div class="action-btn action-share">📤 Share this plan</div>
+          </div>
+          <div class="social-bar">
+            <div class="avatar-stack">
+              <div class="avatar avatar-a"></div>
+              <div class="avatar avatar-b"></div>
+              <div class="avatar avatar-c"></div>
+            </div>
+            <span>31 people in Indiranagar planning similar vibes tonight</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <ul class="diff-list" style="margin-top:14px">
+      <li class="diff-item">
+        <div class="icon good">✓</div>
+        <div class="diff-text">
+          <strong>3 taps to a plan</strong>
+          <span>Location auto-detected, pick vibe chip, tap "Plan my tonight"</span>
+        </div>
+      </li>
+      <li class="diff-item">
+        <div class="icon good">✓</div>
+        <div class="diff-text">
+          <strong>One decision, not three plans</strong>
+          <span>AI commits to the best option — swipe for alternatives</span>
+        </div>
+      </li>
+      <li class="diff-item">
+        <div class="icon good">✓</div>
+        <div class="diff-text">
+          <strong>Shareable "Tonight Card"</strong>
+          <span>Generates a link + image — share on WhatsApp, IG stories</span>
+        </div>
+      </li>
+      <li class="diff-item">
+        <div class="icon good">✓</div>
+        <div class="diff-text">
+          <strong>Social proof + live urgency</strong>
+          <span>"31 people planning similar vibes" + slot countdown</span>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+</div>
+
+<div style="margin-top:28px;background:#fff;border-radius:12px;padding:20px;border:1px solid #E0DDD8">
+  <p style="font-size:13px;font-weight:700;color:#111;margin-bottom:8px">The core product shift in one sentence:</p>
+  <p style="font-size:14px;color:#444;line-height:1.6">Instead of asking the user to <em>"describe your evening and we'll give you options"</em>, we detect their context and say <em>"here's your night — one tap to book it."</em></p>
+  <p style="font-size:13px;color:#666;margin-top:12px">Does this direction feel right? Or do you want to push further in a different direction?</p>
+</div>
+
+</body>
+</html>

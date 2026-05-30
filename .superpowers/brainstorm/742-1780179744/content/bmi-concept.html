@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BMI Food Planner</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif; background: #F0EDE8; color: #111; padding: 20px; }
+
+  .page-title { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+  .page-sub { font-size: 14px; color: #666; margin-bottom: 24px; }
+
+  .flow { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; align-items: start; }
+  @media (max-width: 900px) { .flow { grid-template-columns: 1fr; } }
+
+  .step { background: #fff; border-radius: 14px; overflow: hidden; border: 1px solid #E5E2DC; }
+  .step-header { padding: 12px 16px; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; border-bottom: 1px solid #F0EDE8; display: flex; align-items: center; gap: 8px; }
+  .step-body { padding: 16px; }
+  .step-num { width: 22px; height: 22px; border-radius: 50%; background: #111; color: #fff; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+  /* STEP 1 - INPUT */
+  .input-hero { background: linear-gradient(160deg, #111827 0%, #1F2937 100%); padding: 20px; border-radius: 0; }
+  .input-logo { font-size: 11px; font-weight: 700; color: #6EE7B7; letter-spacing: 0.15em; margin-bottom: 14px; }
+  .input-headline { font-size: 22px; font-weight: 800; color: #fff; line-height: 1.2; margin-bottom: 6px; }
+  .input-sub { font-size: 12px; color: #9CA3AF; margin-bottom: 18px; }
+
+  .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+  .input-field { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 10px 12px; }
+  .input-label { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; color: #9CA3AF; text-transform: uppercase; margin-bottom: 4px; }
+  .input-val { font-size: 18px; font-weight: 800; color: #fff; }
+  .input-unit { font-size: 10px; color: #6B7280; margin-left: 3px; }
+
+  .goal-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .goal-chip { padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; border: 1.5px solid rgba(255,255,255,0.2); color: #D1D5DB; }
+  .goal-chip.active { background: #6EE7B7; color: #111; border-color: #6EE7B7; }
+
+  .cta-btn { background: #6EE7B7; color: #111; font-size: 13px; font-weight: 800; padding: 12px; border-radius: 8px; text-align: center; width: 100%; }
+
+  /* STEP 2 - BMI RESULT */
+  .bmi-ring-wrap { display: flex; flex-direction: column; align-items: center; margin-bottom: 16px; }
+  .bmi-ring { width: 100px; height: 100px; border-radius: 50%; background: conic-gradient(#F59E0B 0% 68%, #E5E7EB 68% 100%); display: flex; align-items: center; justify-content: center; position: relative; }
+  .bmi-ring::after { content: ''; position: absolute; width: 76px; height: 76px; border-radius: 50%; background: #fff; }
+  .bmi-val { position: relative; z-index: 1; text-align: center; }
+  .bmi-num { font-size: 22px; font-weight: 900; color: #111; line-height: 1; }
+  .bmi-label { font-size: 9px; font-weight: 700; color: #666; letter-spacing: 0.1em; }
+  .bmi-tag { margin-top: 8px; background: #FEF3C7; color: #92400E; font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px; }
+
+  .stat-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 14px; }
+  .stat { text-align: center; background: #F8F7F5; border-radius: 8px; padding: 10px 6px; }
+  .stat-num { font-size: 16px; font-weight: 800; color: #111; }
+  .stat-lbl { font-size: 9px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px; }
+
+  .insight-box { background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 8px; padding: 12px; margin-top: 12px; }
+  .insight-title { font-size: 11px; font-weight: 700; color: #92400E; margin-bottom: 4px; }
+  .insight-text { font-size: 12px; color: #78350F; line-height: 1.5; }
+
+  /* STEP 3 - RECOMMENDATIONS */
+  .rec-section { margin-bottom: 14px; }
+  .rec-title { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #888; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .rec-item { display: flex; align-items: center; gap: 10px; padding: 10px; background: #F8F7F5; border-radius: 8px; margin-bottom: 6px; border: 1px solid #EEECEA; }
+  .rec-img { width: 36px; height: 36px; border-radius: 6px; background: #E5E7EB; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .rec-info { flex: 1; min-width: 0; }
+  .rec-name { font-size: 12px; font-weight: 700; color: #111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rec-meta { font-size: 10px; color: #888; margin-top: 1px; }
+  .rec-price { font-size: 11px; font-weight: 700; color: #111; flex-shrink: 0; }
+  .add-btn { background: #111; color: #fff; font-size: 10px; font-weight: 700; padding: 5px 10px; border-radius: 5px; flex-shrink: 0; white-space: nowrap; }
+  .add-btn.green { background: #059669; }
+
+  .share-bar { background: linear-gradient(90deg, #111827, #1F2937); border-radius: 8px; padding: 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .share-text { font-size: 11px; color: #D1D5DB; }
+  .share-text strong { display: block; color: #fff; font-size: 13px; }
+  .share-btn { background: #6EE7B7; color: #111; font-size: 11px; font-weight: 800; padding: 8px 14px; border-radius: 6px; white-space: nowrap; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<p class="page-title">FitPlate — BMI-based food planner</p>
+<p class="page-sub">Enter height + weight → get your BMI → get personalized Swiggy food & grocery picks → add to cart directly</p>
+
+<div class="flow">
+
+  <!-- STEP 1 -->
+  <div class="step">
+    <div class="step-header"><div class="step-num">1</div> Enter your stats</div>
+    <div class="step-body" style="padding:0">
+      <div class="input-hero">
+        <div class="input-logo">FITPLATE · SWIGGY</div>
+        <div class="input-headline">Eat right for<br>your body.</div>
+        <div class="input-sub">Tell us your stats. We'll find the perfect meals on Swiggy.</div>
+        <div class="input-row">
+          <div class="input-field">
+            <div class="input-label">Height</div>
+            <div class="input-val">172<span class="input-unit">cm</span></div>
+          </div>
+          <div class="input-field">
+            <div class="input-label">Weight</div>
+            <div class="input-val">78<span class="input-unit">kg</span></div>
+          </div>
+        </div>
+        <div class="input-row">
+          <div class="input-field">
+            <div class="input-label">Age</div>
+            <div class="input-val">26<span class="input-unit">yrs</span></div>
+          </div>
+          <div class="input-field">
+            <div class="input-label">Diet</div>
+            <div class="input-val" style="font-size:13px">Non-veg</div>
+          </div>
+        </div>
+        <div class="goal-chips">
+          <div class="goal-chip">Lose weight</div>
+          <div class="goal-chip active">Eat healthy</div>
+          <div class="goal-chip">Gain muscle</div>
+          <div class="goal-chip">Maintain</div>
+        </div>
+        <div class="cta-btn">Get my food plan →</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="step">
+    <div class="step-header"><div class="step-num">2</div> Your BMI & targets</div>
+    <div class="step-body">
+      <div class="bmi-ring-wrap">
+        <div class="bmi-ring">
+          <div class="bmi-val">
+            <div class="bmi-num">26.4</div>
+            <div class="bmi-label">BMI</div>
+          </div>
+        </div>
+        <div class="bmi-tag">⚠️ Slightly overweight</div>
+      </div>
+
+      <div class="stat-row">
+        <div class="stat">
+          <div class="stat-num">1,820</div>
+          <div class="stat-lbl">Cal / day</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">137g</div>
+          <div class="stat-lbl">Protein</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">54g</div>
+          <div class="stat-lbl">Fat limit</div>
+        </div>
+      </div>
+
+      <div class="insight-box">
+        <div class="insight-title">What this means for your orders</div>
+        <div class="insight-text">Prioritize high-protein, low-carb meals. Avoid fried and creamy dishes. Aim for grilled chicken, salads, dal-based meals, and low-sugar snacks from Instamart.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="step">
+    <div class="step-header"><div class="step-num">3</div> Add to cart directly</div>
+    <div class="step-body">
+      <div class="rec-section">
+        <div class="rec-title">🍽 Swiggy Food picks</div>
+        <div class="rec-item">
+          <div class="rec-img">🥗</div>
+          <div class="rec-info">
+            <div class="rec-name">Grilled Chicken Salad</div>
+            <div class="rec-meta">Protein Kitchen · 420 cal · ⭐ 4.5</div>
+          </div>
+          <div class="rec-price">₹280</div>
+          <div class="add-btn">+ Add</div>
+        </div>
+        <div class="rec-item">
+          <div class="rec-img">🍗</div>
+          <div class="rec-info">
+            <div class="rec-name">Dal Tadka + Roti</div>
+            <div class="rec-meta">Homestyle Kitchen · 380 cal · ⭐ 4.3</div>
+          </div>
+          <div class="rec-price">₹190</div>
+          <div class="add-btn">+ Add</div>
+        </div>
+        <div class="rec-item">
+          <div class="rec-img">🥙</div>
+          <div class="rec-info">
+            <div class="rec-name">Egg White Wrap</div>
+            <div class="rec-meta">FitBowl · 310 cal · ⭐ 4.4</div>
+          </div>
+          <div class="rec-price">₹220</div>
+          <div class="add-btn">+ Add</div>
+        </div>
+      </div>
+
+      <div class="rec-section">
+        <div class="rec-title">🛒 Instamart healthy picks</div>
+        <div class="rec-item">
+          <div class="rec-img">🌾</div>
+          <div class="rec-info">
+            <div class="rec-name">Millet Muesli 500g</div>
+            <div class="rec-meta">True Elements · Low sugar</div>
+          </div>
+          <div class="rec-price">₹249</div>
+          <div class="add-btn green">+ Add</div>
+        </div>
+        <div class="rec-item">
+          <div class="rec-img">🥜</div>
+          <div class="rec-info">
+            <div class="rec-name">Roasted Almonds 200g</div>
+            <div class="rec-meta">Happilo · High protein</div>
+          </div>
+          <div class="rec-price">₹199</div>
+          <div class="add-btn green">+ Add</div>
+        </div>
+      </div>
+
+      <div class="share-bar">
+        <div class="share-text">
+          <strong>My BMI Plan 🎯</strong>
+          BMI 26.4 · Eating to hit 75kg
+        </div>
+        <div class="share-btn">📤 Share</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div style="margin-top:24px;background:#fff;border-radius:12px;padding:20px;border:1px solid #E0DDD8">
+  <p style="font-size:13px;font-weight:700;color:#111;margin-bottom:8px">Why this is actually viral:</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div style="font-size:12px;color:#444;line-height:1.6">🔥 <strong>BMI is deeply personal</strong> — people share their health journeys on social media constantly. A shareable BMI plan card travels.<br><br>🎯 <strong>Immediate utility</strong> — you get real Swiggy items you can actually order right now, not abstract advice.</div>
+    <div style="font-size:12px;color:#444;line-height:1.6">📦 <strong>Instamart is underused</strong> — healthy grocery bundles (protein snacks, millets, nuts) are a clear unlock that no other app does.<br><br>💬 <strong>"Try this for your BMI"</strong> is the most natural share CTA in health apps. Word-of-mouth built in.</div>
+  </div>
+</div>
+
+</body>
+</html>
