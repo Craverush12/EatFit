@@ -2,11 +2,14 @@
 
 import {
   CheckCircle2,
+  ChevronDown,
   Compass,
   Flame,
   Leaf,
   Loader2,
+  MapPin,
   Minus,
+  Navigation,
   Package,
   Plus,
   PlugZap,
@@ -20,7 +23,7 @@ import {
   Salad,
 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
-import type { BMIInput, BMIPlanResponse, RankedFoodItem, RankedInstamartItem } from "@/lib/types";
+import type { BMIInput, BMIPlanResponse, RankedFoodItem, RankedInstamartItem, SwiggyAddress } from "@/lib/types";
 import { bmiCategoryEmoji, bmiCategoryLabel } from "@/lib/bmi";
 
 type StatusResponse = {
@@ -69,12 +72,56 @@ export function FitPlate() {
   const [cartMsg, setCartMsg] = useState<string | null>(null);
   const [cartReady, setCartReady] = useState({ food: false, instamart: false });
 
+  // ── Address / location state ───────────────────────────────────────────────
+  const [foodAddresses, setFoodAddresses] = useState<SwiggyAddress[]>([]);
+  const [instamartAddresses, setInstamartAddresses] = useState<SwiggyAddress[]>([]);
+  const [selectedFoodAddressId, setSelectedFoodAddressId] = useState<string>("");
+  const [selectedImAddressId, setSelectedImAddressId] = useState<string>("");
+  const [addressesLoading, setAddressesLoading] = useState(false);
+  const [locationDetecting, setLocationDetecting] = useState(false);
+  const [detectedLocation, setDetectedLocation] = useState<{ lat: number; lng: number; label: string } | null>(null);
+
   useEffect(() => {
     fetch("/api/status")
       .then((r) => r.json())
       .then(setStatus)
       .catch(() => null);
   }, []);
+
+  // Fetch saved Swiggy addresses whenever Swiggy becomes connected
+  useEffect(() => {
+    if (!status?.swiggy.connected) return;
+    setAddressesLoading(true);
+    fetch("/api/addresses")
+      .then((r) => r.json())
+      .then((data) => {
+        if (!data.ok) return;
+        setFoodAddresses(data.food ?? []);
+        setInstamartAddresses(data.instamart ?? []);
+        // Auto-select first address in each list
+        if (data.food?.length) setSelectedFoodAddressId(data.food[0].id);
+        if (data.instamart?.length) setSelectedImAddressId(data.instamart[0].id);
+      })
+      .catch(() => null)
+      .finally(() => setAddressesLoading(false));
+  }, [status?.swiggy.connected]);
+
+  function detectLocation() {
+    if (!navigator.geolocation) return;
+    setLocationDetecting(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setDetectedLocation({
+          lat: parseFloat(pos.coords.latitude.toFixed(6)),
+          lng: parseFloat(pos.coords.longitude.toFixed(6)),
+          label: "Detected location",
+        });
+        setLocationDetecting(false);
+      },
+      () => setLocationDetecting(false),
+      { enableHighAccuracy: true, timeout: 10000 },
+    );
+  }
 
   // Auto-submit from share URL params
   useEffect(() => {
@@ -119,7 +166,11 @@ export function FitPlate() {
       const res = await fetch("/api/bmi-plan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(planInput),
+        body: JSON.stringify({
+          ...planInput,
+          ...(selectedFoodAddressId ? { foodAddressId: selectedFoodAddressId } : {}),
+          ...(selectedImAddressId ? { instamartAddressId: selectedImAddressId } : {}),
+        }),
       });
       const data = await res.json();
       if (!res.ok || !data.ok) throw new Error(data.errors?.[0] ?? "Plan failed");
@@ -340,6 +391,113 @@ export function FitPlate() {
                 </div>
               </div>
             </div>
+
+            {/* ── LOCATION & ADDRESS ── */}
+            {status?.swiggy.connected && (
+              <div className="mb-4 rounded-2xl border border-white/[0.09] bg-white/[0.04] p-4 space-y-3">
+                <p className="text-[10px] font-bold tracking-[0.15em] text-[#9CA3AF] uppercase">
+                  Delivery address
+                </p>
+
+                {/* Detect location button */}
+                <button
+                  type="button"
+                  onClick={detectLocation}
+                  disabled={locationDetecting}
+                  className="flex items-center gap-2 w-full border border-white/10 bg-white/[0.06]
+                             hover:border-[#86EFAC]/40 hover:bg-white/[0.09]
+                             text-[#D1D5DB] text-xs font-bold px-4 py-2.5 rounded-xl
+                             disabled:opacity-50 transition-all duration-200"
+                >
+                  {locationDetecting ? (
+                    <Loader2 size={13} className="animate-spin text-[#86EFAC]" />
+                  ) : (
+                    <Navigation size={13} className={detectedLocation ? "text-[#86EFAC]" : "text-[#9CA3AF]"} />
+                  )}
+                  {locationDetecting
+                    ? "Detecting…"
+                    : detectedLocation
+                    ? `${detectedLocation.lat}, ${detectedLocation.lng}`
+                    : "Detect my location"}
+                  {detectedLocation && (
+                    <span className="ml-auto text-[#86EFAC] text-[10px] font-bold">✓ Detected</span>
+                  )}
+                </button>
+
+                {/* Address selectors */}
+                {addressesLoading ? (
+                  <div className="flex items-center gap-2 text-[11px] text-[#6B7280]">
+                    <Loader2 size={12} className="animate-spin" /> Loading saved addresses…
+                  </div>
+                ) : (
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {/* Food address */}
+                    <div>
+                      <p className="text-[10px] font-bold text-[#6B7280] mb-1.5 flex items-center gap-1">
+                        <Utensils size={10} /> Food delivery address
+                      </p>
+                      {foodAddresses.length === 0 ? (
+                        <p className="text-[11px] text-[#6B7280] italic">No saved addresses found</p>
+                      ) : (
+                        <div className="relative">
+                          <select
+                            value={selectedFoodAddressId}
+                            onChange={(e) => setSelectedFoodAddressId(e.target.value)}
+                            className="w-full appearance-none bg-white/[0.06] border border-white/10
+                                       text-[#E5E7EB] text-[11px] font-semibold rounded-xl px-3 py-2.5 pr-8
+                                       focus:outline-none focus:border-[#86EFAC]/50
+                                       hover:border-white/20 transition-colors cursor-pointer"
+                          >
+                            {foodAddresses.map((addr) => (
+                              <option key={addr.id} value={addr.id} className="bg-[#1a1a1a] text-white">
+                                {addr.label} — {addr.addressLine.slice(0, 40)}{addr.addressLine.length > 40 ? "…" : ""}
+                              </option>
+                            ))}
+                          </select>
+                          <ChevronDown size={12} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] pointer-events-none" />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Instamart address */}
+                    <div>
+                      <p className="text-[10px] font-bold text-[#6B7280] mb-1.5 flex items-center gap-1">
+                        <ShoppingCart size={10} /> Instamart address
+                      </p>
+                      {instamartAddresses.length === 0 ? (
+                        <p className="text-[11px] text-[#6B7280] italic">No saved addresses found</p>
+                      ) : (
+                        <div className="relative">
+                          <select
+                            value={selectedImAddressId}
+                            onChange={(e) => setSelectedImAddressId(e.target.value)}
+                            className="w-full appearance-none bg-white/[0.06] border border-white/10
+                                       text-[#E5E7EB] text-[11px] font-semibold rounded-xl px-3 py-2.5 pr-8
+                                       focus:outline-none focus:border-[#86EFAC]/50
+                                       hover:border-white/20 transition-colors cursor-pointer"
+                          >
+                            {instamartAddresses.map((addr) => (
+                              <option key={addr.id} value={addr.id} className="bg-[#1a1a1a] text-white">
+                                {addr.label} — {addr.addressLine.slice(0, 40)}{addr.addressLine.length > 40 ? "…" : ""}
+                              </option>
+                            ))}
+                          </select>
+                          <ChevronDown size={12} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] pointer-events-none" />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Selected address pill */}
+                {(selectedFoodAddressId || selectedImAddressId) && !addressesLoading && (
+                  <div className="flex items-center gap-1.5 text-[10px] text-[#86EFAC]">
+                    <MapPin size={10} />
+                    Address selected — results will be tailored to your delivery location
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Diet */}
             <div className="flex flex-wrap gap-2 mb-4">

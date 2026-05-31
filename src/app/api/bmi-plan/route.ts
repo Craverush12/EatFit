@@ -36,16 +36,22 @@ export async function POST(req: NextRequest) {
     const searchTerms = await generateFoodSearchTerms(category, goal, diet);
     const vegFilter = diet === "veg" || diet === "vegan" ? 1 : 0;
 
-    // Step 3: Get saved addresses from both servers in parallel
-    const [foodAddresses, instamartAddresses] = await Promise.all([
-      captureToolCall("food", "get_addresses", {}, origin),
-      captureToolCall("instamart", "get_addresses", {}, origin),
-    ]);
+    // Step 3: Use pre-selected address IDs from the request, or fall back to fetching
+    let foodAddressId: string | undefined = body.foodAddressId;
+    let instamartAddressId: string | undefined = body.instamartAddressId;
 
-    const foodAddressId =
-      foodAddresses.status === "ok" ? firstAddressId(foodAddresses.data) : undefined;
-    const instamartAddressId =
-      instamartAddresses.status === "ok" ? firstAddressId(instamartAddresses.data) : undefined;
+    if (!foodAddressId || !instamartAddressId) {
+      const [foodAddresses, instamartAddresses] = await Promise.all([
+        !foodAddressId ? captureToolCall("food", "get_addresses", {}, origin) : Promise.resolve(null),
+        !instamartAddressId ? captureToolCall("instamart", "get_addresses", {}, origin) : Promise.resolve(null),
+      ]);
+      if (!foodAddressId && foodAddresses?.status === "ok") {
+        foodAddressId = firstAddressId(foodAddresses.data);
+      }
+      if (!instamartAddressId && instamartAddresses?.status === "ok") {
+        instamartAddressId = firstAddressId(instamartAddresses.data);
+      }
+    }
 
     // Step 4: Get a restaurant ID via search_restaurants (required for cart)
     // then run all menu + grocery searches in parallel

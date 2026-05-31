@@ -110,6 +110,15 @@ export type PlannerResponse = {
   errors: string[];
 };
 
+// ── Swiggy address ──────────────────────────────────────────────────────────
+
+export type SwiggyAddress = {
+  id: string;
+  label: string;          // "Home", "Work", etc.
+  addressLine: string;    // street / area
+  server: "food" | "instamart";
+};
+
 // ── FitPlate BMI types ──────────────────────────────────────────────────────
 
 export type BMIInput = {
@@ -119,6 +128,9 @@ export type BMIInput = {
   gender: "male" | "female";
   diet: "veg" | "non-veg" | "vegan";
   goal: "lose" | "healthy" | "muscle" | "maintain";
+  // Optional: pre-selected address IDs (skip get_addresses round-trip)
+  foodAddressId?: string;
+  instamartAddressId?: string;
 };
 
 export type MacroTargets = {
