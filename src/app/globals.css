@@ -1,41 +1,79 @@
 @import "tailwindcss";
 
+/* ── Design tokens ─────────────────────────────────────────────────────────── */
 :root {
-  --background: #f6f1e8;
-  --foreground: #1e1a15;
+  /* Surfaces */
+  --bg:          #F4F1EA;   /* warm parchment */
+  --surface:     #FFFFFF;
+  --surface-dim: #F9F7F3;
+  --border:      #E5E1D8;
+  --border-dim:  #EDE9E1;
+
+  /* Dark hero */
+  --ink:         #0C0A15;   /* deep purple-black */
+  --ink-mid:     #1A1726;
+
+  /* Brand accents */
+  --indigo:      #5A51E8;
+  --violet:      #8B5CF6;
+  --food:        #F97316;   /* orange — Swiggy food */
+  --instamart:   #7C3AED;   /* violet — Instamart */
+  --emerald:     #10B981;   /* health / success */
+  --amber:       #F59E0B;
+
+  /* Text */
+  --text-1:      #0D0B14;
+  --text-2:      #4B5563;
+  --text-3:      #9CA3AF;
+
+  /* Shadows */
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06);
+  --shadow-card-hover: 0 4px 12px rgba(0,0,0,0.08), 0 20px 40px rgba(0,0,0,0.08);
+  --shadow-cta:  0 4px 14px rgba(90,81,232,0.35);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, monospace;
+  --font-sans: var(--font-jakarta), "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --color-background: var(--bg);
+  --color-foreground: var(--text-1);
 }
+
+/* ── Reset & base ──────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text-1);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-input,
-textarea {
-  min-height: 42px;
-  width: 100%;
-  border: 1px solid color-mix(in srgb, var(--foreground) 20%, transparent);
-  background: rgb(255 255 255 / 0.66);
-  padding: 0.65rem 0.75rem;
-  font-weight: 700;
+/* Strip Next.js opinionated input styles — components handle their own */
+input, textarea, select {
+  font-family: inherit;
+  font-size: inherit;
   outline: none;
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: 0;
 }
 
-textarea {
-  min-height: 84px;
-  resize: vertical;
+/* ── Scrollbar ─────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+/* ── Utility animations ────────────────────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(90,81,232,0); }
+  50%       { box-shadow: 0 0 0 8px rgba(90,81,232,0.15); }
 }
 
-input:focus,
-textarea:focus {
-  border-color: #1f695c;
-  box-shadow: 0 0 0 3px rgb(31 105 92 / 0.18);
-}
+.animate-fade-up { animation: fadeUp 0.4s ease both; }
+.animate-pulse-glow { animation: pulse-glow 2s ease infinite; }
