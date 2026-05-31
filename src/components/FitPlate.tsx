@@ -219,6 +219,12 @@ export function FitPlate() {
     .filter((i) => (foodQty[i.id] ?? 0) > 0)
     .reduce((s, i) => s + i.estimatedCalories * (foodQty[i.id] ?? 0), 0) ?? 0;
 
+  const selectedImCal = result?.instamartItems
+    .filter((i) => (imQty[i.spinId] ?? 0) > 0)
+    .reduce((s, i) => s + i.estimatedCalories * (imQty[i.spinId] ?? 0), 0) ?? 0;
+
+  const totalSelectedCal = selectedFoodCal + selectedImCal;
+
   const selectedFoodTotal = result?.foodItems
     .filter((i) => (foodQty[i.id] ?? 0) > 0)
     .reduce((s, i) => s + i.price * (foodQty[i.id] ?? 0), 0) ?? 0;
@@ -233,8 +239,8 @@ export function FitPlate() {
 
   const dailyTarget = result?.bmiResult.targets.calories ?? 0;
   const calPct =
-    dailyTarget > 0 && selectedFoodCal > 0
-      ? Math.min(100, Math.round((selectedFoodCal / dailyTarget) * 100))
+    dailyTarget > 0 && totalSelectedCal > 0
+      ? Math.min(100, Math.round((totalSelectedCal / dailyTarget) * 100))
       : 0;
 
   const filteredFood = useMemo(() => {
@@ -475,55 +481,90 @@ export function FitPlate() {
 
         {/* ── CALORIE + CART TRACKER ── */}
         {result && (
-          <div className="rounded-2xl bg-white border border-[#E8E5E0] shadow-sm p-4 flex flex-wrap items-center gap-4">
-            {/* Food calories */}
-            <div className="flex flex-col items-center min-w-[64px]">
-              <div className="text-xl font-black text-[#111]">{dailyTarget}</div>
-              <div className="text-[10px] font-semibold text-[#999] uppercase tracking-wide mt-0.5">Cal target</div>
-            </div>
-            <div className="w-px h-9 bg-[#EEE]" />
-            <div className="flex flex-col items-center min-w-[64px]">
-              <div className="text-xl font-black text-[#16A34A]">{selectedFoodCal}</div>
-              <div className="text-[10px] font-semibold text-[#999] uppercase tracking-wide mt-0.5">Food cal</div>
-            </div>
-            <div className="w-px h-9 bg-[#EEE]" />
-            <div className="flex flex-col items-center min-w-[64px]">
-              <div className="text-xl font-black text-[#5856D6]">{totalItemsInCart}</div>
-              <div className="text-[10px] font-semibold text-[#999] uppercase tracking-wide mt-0.5">Items added</div>
-            </div>
-            <div className="w-px h-9 bg-[#EEE]" />
-            <div className="flex flex-col items-center min-w-[64px]">
-              <div className="text-xl font-black text-[#FC5523]">
-                ₹{Math.round(selectedFoodTotal + selectedImTotal)}
+          <div className="rounded-2xl bg-white border border-[#E8E5E0] shadow-sm p-4 space-y-3">
+            <div className="flex flex-wrap items-center gap-4">
+              {/* Daily target */}
+              <div className="flex flex-col items-center min-w-[64px]">
+                <div className="text-xl font-black text-[#111]">{dailyTarget}</div>
+                <div className="text-[10px] font-semibold text-[#999] uppercase tracking-wide mt-0.5">Cal target</div>
               </div>
-              <div className="text-[10px] font-semibold text-[#999] uppercase tracking-wide mt-0.5">Total</div>
+              <div className="w-px h-9 bg-[#EEE]" />
+
+              {/* Food cal */}
+              <div className="flex flex-col items-center min-w-[64px]">
+                <div className="text-xl font-black text-[#FC5523]">{selectedFoodCal}</div>
+                <div className="text-[10px] font-semibold text-[#999] uppercase tracking-wide mt-0.5">Food kcal</div>
+              </div>
+              <div className="w-px h-9 bg-[#EEE]" />
+
+              {/* Instamart cal */}
+              <div className="flex flex-col items-center min-w-[64px]">
+                <div className="text-xl font-black text-[#5856D6]">{selectedImCal}</div>
+                <div className="text-[10px] font-semibold text-[#999] uppercase tracking-wide mt-0.5">Grocery kcal</div>
+              </div>
+              <div className="w-px h-9 bg-[#EEE]" />
+
+              {/* Total */}
+              <div className="flex flex-col items-center min-w-[64px]">
+                <div className="text-xl font-black text-[#16A34A]">{totalSelectedCal}</div>
+                <div className="text-[10px] font-semibold text-[#999] uppercase tracking-wide mt-0.5">Total kcal</div>
+              </div>
+              <div className="w-px h-9 bg-[#EEE]" />
+
+              {/* Spend */}
+              <div className="flex flex-col items-center min-w-[64px]">
+                <div className="text-xl font-black text-[#111]">
+                  ₹{Math.round(selectedFoodTotal + selectedImTotal)}
+                </div>
+                <div className="text-[10px] font-semibold text-[#999] uppercase tracking-wide mt-0.5">Spend</div>
+              </div>
+
+              {/* Progress bar — flex-1 */}
+              <div className="flex-1 min-w-[160px]">
+                <div className="flex justify-between mb-1.5">
+                  <span className="text-[11px] font-bold text-[#111]">
+                    {calPct > 0
+                      ? `${calPct}% of daily target`
+                      : "Add items to track calories"}
+                  </span>
+                  <span className="text-[11px] text-[#888]">
+                    {Math.max(0, dailyTarget - totalSelectedCal)} kcal left
+                  </span>
+                </div>
+                <div className="h-2.5 bg-[#F0EDE8] rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-500 ease-out"
+                    style={{
+                      background:
+                        calPct >= 100
+                          ? "#F87171"
+                          : calPct >= 80
+                          ? "#F59E0B"
+                          : "linear-gradient(90deg,#86EFAC,#34D399)",
+                      width: `${Math.max(calPct, 0)}%`,
+                    }}
+                  />
+                </div>
+              </div>
             </div>
 
-            {/* Calorie progress bar */}
-            <div className="flex-1 min-w-[140px]">
-              <div className="flex justify-between mb-1.5">
-                <span className="text-[11px] font-bold text-[#111]">
-                  {calPct > 0 ? `${calPct}% of daily calories` : "Add food items to track calories"}
-                </span>
-                <span className="text-[11px] text-[#888]">
-                  {Math.max(0, dailyTarget - selectedFoodCal)} kcal remaining
-                </span>
+            {/* Segmented breakdown of bar */}
+            {totalSelectedCal > 0 && (
+              <div className="flex items-center gap-3 text-[11px] text-[#888]">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#FC5523]" />
+                  Food: {selectedFoodCal} kcal
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#5856D6]" />
+                  Groceries: {selectedImCal} kcal
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#16A34A]" />
+                  Combined: {totalSelectedCal} / {dailyTarget} kcal
+                </div>
               </div>
-              <div className="h-2.5 bg-[#F0EDE8] rounded-full overflow-hidden">
-                <div
-                  className="h-full rounded-full transition-all duration-500 ease-out"
-                  style={{
-                    background:
-                      calPct >= 100
-                        ? "#F87171"
-                        : calPct >= 75
-                        ? "#F59E0B"
-                        : "linear-gradient(90deg,#86EFAC,#34D399)",
-                    width: `${Math.max(calPct, 0)}%`,
-                  }}
-                />
-              </div>
-            </div>
+            )}
           </div>
         )}
 
@@ -883,11 +924,24 @@ function InstamartCard({
         <p className="text-sm font-bold text-[#111] leading-snug">{item.name}</p>
         <p className="text-[11px] text-[#888] mt-0.5 mb-2">{item.quantityDescription}</p>
 
-        {item.fitTag && (
-          <span className="inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#F0FDF4] text-[#15803D] mb-2.5">
-            {item.fitTag}
-          </span>
-        )}
+        {/* Tags */}
+        <div className="flex flex-wrap gap-1 mb-2.5">
+          {item.fitTag && (
+            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#F0FDF4] text-[#15803D]">
+              {item.fitTag}
+            </span>
+          )}
+          {item.estimatedCalories > 0 && (
+            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#FFF7ED] text-[#C2410C]">
+              ~{item.estimatedCalories} kcal/serving
+            </span>
+          )}
+          {item.estimatedProtein > 0 && (
+            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#EFF6FF] text-[#1D4ED8]">
+              {item.estimatedProtein}g protein
+            </span>
+          )}
+        </div>
 
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">

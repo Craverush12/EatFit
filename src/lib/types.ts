@@ -146,6 +146,8 @@ export type RankedFoodItem = FoodOption & {
 export type RankedInstamartItem = InstamartOption & {
   fitTag: string;
   healthBenefit: string;
+  estimatedCalories: number;   // per typical serving / per 100g as appropriate
+  estimatedProtein: number;    // grams protein per serving
 };
 
 export type BMIPlanResponse = {

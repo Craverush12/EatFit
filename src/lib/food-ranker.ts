@@ -32,6 +32,8 @@ type ImRankResult = {
   spinId: string;
   fitTag: string;
   healthBenefit: string;
+  estimatedCalories: number;
+  estimatedProtein: number;
 };
 
 export async function rankFoodItems(
@@ -152,12 +154,15 @@ export async function rankInstamartItems(
                   fitTag:
                     "one of: Zero sugar | High fibre | High protein | Low GI | Probiotic | Healthy fat | Antioxidant",
                   healthBenefit: "string — max 10 words, plain English benefit for this item",
+                  estimatedCalories: "number — calories per typical single serving (e.g. 30g of muesli, 1 cup of oats, 1 protein bar). Use 0 if truly unknown.",
+                  estimatedProtein: "number — grams of protein per that same serving. Use 0 if unknown.",
                 },
               ],
             },
             calorieTarget: targets.calories,
             proteinTarget: targets.protein,
             items: simplified,
+            instruction: "Estimate nutritional values for one typical serving of the product, not the entire package.",
           }),
         },
       ],
@@ -177,12 +182,16 @@ export async function rankInstamartItems(
         ...itemMap.get(r.spinId)!,
         fitTag: r.fitTag ?? "Healthy",
         healthBenefit: r.healthBenefit ?? "",
+        estimatedCalories: r.estimatedCalories ?? 0,
+        estimatedProtein: r.estimatedProtein ?? 0,
       }));
   } catch {
     return rawItems.slice(0, 8).map((item) => ({
       ...item,
       fitTag: "Healthy",
       healthBenefit: "",
+      estimatedCalories: 0,
+      estimatedProtein: 0,
     }));
   }
 }
