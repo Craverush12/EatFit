@@ -84,7 +84,7 @@ function extractFoodOptions(
   restaurantId?: string,
   restaurantName?: string,
 ): FoodOption[] {
-  if (!addressId || !restaurantId) return [];
+  if (!addressId) return [];
   const items = getStructured<RecordValue[]>(value, "items");
 
   return items
@@ -94,10 +94,18 @@ function extractFoodOptions(
       const price = numberValue(item.price);
       if (!id || !name || !Number.isFinite(price)) return undefined;
 
+      // Prefer passed-in restaurantId; fall back to the one embedded in the item
+      const resolvedRestaurantId =
+        restaurantId ||
+        stringValue(item.restaurantId) ||
+        stringValue(item.restId) ||
+        stringValue(item.restaurant_id) ||
+        "unknown";
+
       return {
         id,
-        restaurantId,
-        restaurantName: restaurantName || "Selected restaurant",
+        restaurantId: resolvedRestaurantId,
+        restaurantName: restaurantName || stringValue(item.restaurantName) || "Restaurant",
         addressId,
         name,
         price,

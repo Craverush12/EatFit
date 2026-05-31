@@ -13,7 +13,6 @@ import { captureToolCall, firstAddressId, firstRestaurantId } from "@/lib/swiggy
 import {
   extractFoodOptionsFromSearches,
   extractInstamartOptionsFromSearches,
-  extractRestaurantFromSearches,
 } from "@/lib/commerce";
 import type { BMIInput, BMIPlanResponse } from "@/lib/types";
 
@@ -48,7 +47,35 @@ export async function POST(req: NextRequest) {
     const instamartAddressId =
       instamartAddresses.status === "ok" ? firstAddressId(instamartAddresses.data) : undefined;
 
-    // Step 4: Search food + instamart in parallel across all queries
+    // Step 4: Get a restaurant ID via search_restaurants (required for cart)
+    // then run all menu + grocery searches in parallel
+    const foodRestaurantSearch = foodAddressId
+      ? await captureToolCall(
+          "food",
+          "search_restaurants",
+          { addressId: foodAddressId, query: searchTerms.foodQueries[0] ?? "healthy food" },
+          origin,
+        )
+      : null;
+
+    const foodRestaurantId = foodRestaurantSearch?.status === "ok"
+      ? firstRestaurantId(foodRestaurantSearch.data)
+      : undefined;
+
+    // Extract restaurant name from the search result
+    const foodRestaurantName = (() => {
+      if (!foodRestaurantSearch?.data) return undefined;
+      const data = foodRestaurantSearch.data as Record<string, unknown>;
+      const sc = data.structuredContent as Record<string, unknown> | undefined;
+      const restaurants = sc?.restaurants;
+      if (Array.isArray(restaurants) && restaurants.length > 0) {
+        const first = restaurants[0] as Record<string, unknown>;
+        return typeof first.name === "string" ? first.name : undefined;
+      }
+      return undefined;
+    })();
+
+    // Step 5: Search food menus + instamart in parallel
     const [foodSearchResults, instamartSearchResults] = await Promise.all([
       foodAddressId
         ? Promise.all(
@@ -56,7 +83,12 @@ export async function POST(req: NextRequest) {
               captureToolCall(
                 "food",
                 "search_menu",
-                { addressId: foodAddressId, query: q, vegFilter },
+                {
+                  addressId: foodAddressId,
+                  query: q,
+                  vegFilter,
+                  ...(foodRestaurantId ? { restaurantIdOfAddedItem: foodRestaurantId } : {}),
+                },
                 origin,
               ),
             ),
@@ -75,16 +107,6 @@ export async function POST(req: NextRequest) {
           )
         : Promise.resolve([]),
     ]);
-
-    // Step 5: Extract restaurant info for cart payload
-    const restaurant = extractRestaurantFromSearches(foodSearchResults);
-    const foodRestaurantId =
-      restaurant?.id ??
-      (() => {
-        const first = foodSearchResults.find((r) => r.status === "ok");
-        return first ? firstRestaurantId(first.data) : undefined;
-      })();
-    const foodRestaurantName = restaurant?.name;
 
     // Step 6: Parse raw MCP results into typed options
     const rawFoodOptions = extractFoodOptionsFromSearches(
